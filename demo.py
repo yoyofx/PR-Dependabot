@@ -29,7 +29,7 @@ except subprocess.CalledProcessError as e:
 with open("results.json", 'r', encoding='utf-8') as file:
     vuln_file = file.read()
 
-with open("results.json", 'r', encoding='utf-8') as file:
+with open("go.mod", 'r', encoding='utf-8') as file:
     gomod_file = file.read()
 
 # 定义模板
@@ -65,7 +65,7 @@ prompt = PromptTemplate(
     template=pr_template
 )
 
-# 生成描述
+# 生成PR描述模板
 pr_description = prompt.format(
     vuln_file=vuln_file,
     gomod_file=gomod_file
@@ -76,6 +76,37 @@ pr_description = prompt.format(
 output = llm.predict(pr_description)
 
 # 打印生成的 Pull Request 描述
+print(output)
+
+
+# 生成PR所需要的code模板:
+pr_code_template = """
+请根据组件漏洞清单,修复go.mod中的组件版本:
+
+组件漏洞清单如下:
+{vuln_file}
+
+go.mod:
+{gomod_file}
+
+输出与go.mod格式保持一致,并标注做了修改
+"""
+
+
+code_prompt = PromptTemplate(
+    input_variables=["vuln_file", "gomod_file"],
+    template=pr_code_template
+)
+
+# 生成描述
+pr_code_description = code_prompt.format(
+    vuln_file=vuln_file,
+    gomod_file=gomod_file
+)
+
+
+
+output = llm.predict(pr_code_description)
 print(output)
 
 
